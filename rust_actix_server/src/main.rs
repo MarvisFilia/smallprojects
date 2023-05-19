@@ -7,8 +7,14 @@ use std::io::Read;
 async fn index(info: actix_web::web::Path<(String,)>) -> Result<actix_web::HttpResponse> {
     let file_path: PathBuf = format!("./{}", info.into_inner().0).into();
     let mut file = match File::open(&file_path) {
-        Ok(file) => file,
-        Err(_) => return Ok(actix_web::HttpResponse::NotFound().finish()),
+        Ok(file) => {
+            println!("Serving file {:?}", &file_path);
+            file
+        },
+        Err(_) => {
+            println!("No file with name {:?}", &file_path);
+            return Ok(actix_web::HttpResponse::NotFound().finish());
+        },
     };
 
     let mut contents = String::new();
@@ -21,6 +27,9 @@ async fn index(info: actix_web::web::Path<(String,)>) -> Result<actix_web::HttpR
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+
+    println!("Serving on 127.0.0.1:800/");
+
     HttpServer::new(|| {
         App::new()
             .service(index)
